@@ -67,36 +67,36 @@ export function CorePage({ onBackToHome }: CorePageProps) {
         maxLit={200}
       />
       <div className="relative z-10 flex flex-col flex-1">
-      <Header
-        navigationData={navigationData}
-        onCollaborateClick={() => {
-          window.location.hash = "#join-us";
-        }}
-      />
-
-      <div className="container mx-auto px-4 pt-6">
-        <Button
-          variant="ghost"
-          onClick={onBackToHome}
-          className="gap-2 glass-badge cursor-pointer rounded-full hover:border-white/40"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span className="glass-heading font-medium">Back to Home</span>
-        </Button>
-      </div>
-
-      <main className="flex-1">
-        <CoreSection
-          id="core"
-          onJoinClick={() => {
+        <Header
+          navigationData={navigationData}
+          onCollaborateClick={() => {
             window.location.hash = "#join-us";
           }}
         />
-      </main>
 
-      <footer className="py-8 text-center text-sm glass-subtext">
-        <p>&copy; {new Date().getFullYear()} BUILDCULT. All rights reserved.</p>
-      </footer>
+        <div className="container mx-auto px-4 pt-6">
+          <Button
+            variant="ghost"
+            onClick={onBackToHome}
+            className="gap-2 glass-badge cursor-pointer rounded-full hover:border-white/40"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="glass-heading font-medium">Back to Home</span>
+          </Button>
+        </div>
+
+        <main className="flex-1">
+          <CoreSection
+            id="core"
+            onJoinClick={() => {
+              window.location.hash = "#join-us";
+            }}
+          />
+        </main>
+
+        <footer className="py-8 text-center text-sm glass-subtext">
+          <p>&copy; {new Date().getFullYear()} BUILDCULT. All rights reserved.</p>
+        </footer>
       </div>
     </div>
   );
