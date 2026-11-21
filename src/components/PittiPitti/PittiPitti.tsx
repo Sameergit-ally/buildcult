@@ -53,15 +53,16 @@ export function PittiPitti() {
   const [hidden, setHidden] = useState(() => readLS(C.storage.hidden) === '1');
   const [storedName, setStoredName] = useState(() => readLS(C.storage.name));
   
-  // Pitti Pitti won't activate unless a name has been entered
+  // Pitti Pitti won't activate interactions unless a name has been entered
   const isUnlocked = Boolean(storedName && storedName.trim().length > 0);
   const displayName = storedName?.trim() || '';
 
   const brain = usePittiBrain({
     rootRef, flipRef, pupilsRef,
     displayName,
-    askNameOnStart: false, // Handled explicitly below if not unlocked
-    enabled: !hidden && isUnlocked,
+    askNameOnStart: !isUnlocked,
+    enabled: !hidden,
+    isUnlocked,
   });
   const { bubble, mood, clearBubble, say } = brain;
 
@@ -85,7 +86,7 @@ export function PittiPitti() {
     // After unlocking, greet with flirty/roast line
     setTimeout(() => {
       say('greet', n);
-    }, 100);
+    }, 150);
   }, [say]);
 
   const style = themeStyle(theme);
@@ -99,13 +100,13 @@ export function PittiPitti() {
     );
   }
 
-  // Active bubble: either from brain (when unlocked), or the mandatory locked name prompt
+  // If not unlocked, keep the ask bubble open permanently until submitted!
   const activeBubble = isUnlocked
     ? bubble
-    : { id: 1, kind: 'ask' as const, text: C.askText };
+    : (bubble || { id: 1, kind: 'ask' as const, text: C.askText });
 
   return (
-    <div ref={rootRef} className="pitti-root pitti-scope" data-mood={isUnlocked ? mood : 'sleep'} style={style}>
+    <div ref={rootRef} className="pitti-root pitti-scope" data-mood={mood} style={style}>
       {activeBubble && (
         <SpeechBubble
           key={activeBubble.id}
@@ -118,15 +119,15 @@ export function PittiPitti() {
       <div ref={flipRef} className="pitti-flip">
         <button type="button" className="pitti-hit"
           aria-label="Pitti Pitti, a small rabbit. Enter your name to interact!"
-          onPointerEnter={isUnlocked ? brain.onHover : undefined}
-          onPointerLeave={isUnlocked ? brain.onLeave : undefined}
-          onPointerDown={isUnlocked ? brain.onPointerDown : undefined}
-          onPointerUp={isUnlocked ? brain.onPointerUp : undefined}
-          onClick={isUnlocked ? brain.onClick : undefined}
+          onPointerEnter={brain.onHover}
+          onPointerLeave={brain.onLeave}
+          onPointerDown={brain.onPointerDown}
+          onPointerUp={brain.onPointerUp}
+          onClick={brain.onClick}
           onContextMenu={(e) => { e.preventDefault(); hide(); }}>
           <span className="pitti-ground-shadow" aria-hidden="true" />
           <span className="pitti-actor">
-            <RabbitSvg mood={isUnlocked ? mood : 'idle'} pupilsRef={pupilsRef} />
+            <RabbitSvg mood={mood} pupilsRef={pupilsRef} />
           </span>
         </button>
       </div>
