@@ -52,16 +52,16 @@ export function PittiPitti() {
 
   const [hidden, setHidden] = useState(() => readLS(C.storage.hidden) === '1');
   const [storedName, setStoredName] = useState(() => readLS(C.storage.name));
-  const [askOnStart] = useState(
-    () => readLS(C.storage.name) === null && readLS(C.storage.asked) !== '1',
-  );
-  const displayName = storedName?.trim() || C.defaultName;
+  
+  // Pitti Pitti won't activate unless a name has been entered
+  const isUnlocked = Boolean(storedName && storedName.trim().length > 0);
+  const displayName = storedName?.trim() || '';
 
   const brain = usePittiBrain({
     rootRef, flipRef, pupilsRef,
     displayName,
-    askNameOnStart: askOnStart,
-    enabled: !hidden,
+    askNameOnStart: false, // Handled explicitly below if not unlocked
+    enabled: !hidden && isUnlocked,
   });
   const { bubble, mood, clearBubble, say } = brain;
 
@@ -78,18 +78,15 @@ export function PittiPitti() {
 
   const submitName = useCallback((raw: string) => {
     const n = raw.trim().slice(0, 24);
+    if (!n) return;
+    writeLS(C.storage.name, n);
     writeLS(C.storage.asked, '1');
-    if (n) {
-      writeLS(C.storage.name, n);
-      setStoredName(n);
-    }
-    say('greet', n || C.defaultName);
+    setStoredName(n);
+    // After unlocking, greet with flirty/roast line
+    setTimeout(() => {
+      say('greet', n);
+    }, 100);
   }, [say]);
-
-  const skipName = useCallback(() => {
-    writeLS(C.storage.asked, '1');
-    clearBubble();
-  }, [clearBubble]);
 
   const style = themeStyle(theme);
 
@@ -102,37 +99,46 @@ export function PittiPitti() {
     );
   }
 
+  // Active bubble: either from brain (when unlocked), or the mandatory locked name prompt
+  const activeBubble = isUnlocked
+    ? bubble
+    : { id: 1, kind: 'ask' as const, text: C.askText };
+
   return (
-    <div ref={rootRef} className="pitti-root pitti-scope" data-mood={mood} style={style}>
-      {bubble && (
-        <SpeechBubble key={bubble.id} kind={bubble.kind} text={bubble.text}
-          onSubmitName={submitName} onSkip={skipName} />
+    <div ref={rootRef} className="pitti-root pitti-scope" data-mood={isUnlocked ? mood : 'sleep'} style={style}>
+      {activeBubble && (
+        <SpeechBubble
+          key={activeBubble.id}
+          kind={activeBubble.kind}
+          text={activeBubble.text}
+          onSubmitName={submitName}
+        />
       )}
 
       <div ref={flipRef} className="pitti-flip">
         <button type="button" className="pitti-hit"
-          aria-label="Pitti Pitti, a small black rabbit. Press to make it dance, or drag to move."
-          onPointerEnter={brain.onHover}
-          onPointerLeave={brain.onLeave}
-          onPointerDown={brain.onPointerDown}
-          onPointerUp={brain.onPointerUp}
-          onClick={brain.onClick}
+          aria-label="Pitti Pitti, a small rabbit. Enter your name to interact!"
+          onPointerEnter={isUnlocked ? brain.onHover : undefined}
+          onPointerLeave={isUnlocked ? brain.onLeave : undefined}
+          onPointerDown={isUnlocked ? brain.onPointerDown : undefined}
+          onPointerUp={isUnlocked ? brain.onPointerUp : undefined}
+          onClick={isUnlocked ? brain.onClick : undefined}
           onContextMenu={(e) => { e.preventDefault(); hide(); }}>
           <span className="pitti-ground-shadow" aria-hidden="true" />
           <span className="pitti-actor">
-            <RabbitSvg mood={mood} pupilsRef={pupilsRef} />
+            <RabbitSvg mood={isUnlocked ? mood : 'idle'} pupilsRef={pupilsRef} />
           </span>
         </button>
       </div>
 
-      {mood === 'dance' && (
+      {isUnlocked && mood === 'dance' && (
         <>
           <span className="pitti-heart pitti-h1" aria-hidden="true">♥</span>
           <span className="pitti-heart pitti-h2" aria-hidden="true">✦</span>
           <span className="pitti-heart pitti-h3" aria-hidden="true">♥</span>
         </>
       )}
-      {mood === 'sleep' && (
+      {isUnlocked && mood === 'sleep' && (
         <span className="pitti-zzz" aria-hidden="true">
           <i>z</i><i>z</i><i>Z</i>
         </span>

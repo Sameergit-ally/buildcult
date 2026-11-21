@@ -48,7 +48,7 @@ export const PITTI_CONFIG: PittiConfig = {
   followDistance: 120,
   viewportMargin: 16,
   defaultName: 'friend',
-  askText: "Hi! I'm Pitti Pitti 🐰 What's your name?",
+  askText: "Pehle apna naam batao tabhi baat karunga! 🐰",
   colors: {
     light: {
       body: '#222226',
