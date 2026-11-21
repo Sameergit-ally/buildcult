@@ -82,11 +82,11 @@ export const CORE_MEMBERS: LanyardMember[] = [
   {
     id: "saiansh",
     name: "Saiansh",
-    role: "KUCH BHI",
-    team: "BUILDCULT · Wildcard Operations",
+    role: "GenSec",
+    team: "BUILDCULT · Administration & Operations",
     image: "/saiansh-portrait.jpg",
-    bio: "KUCH BHI. Doing everything from chaotic experiments to solving impossible problems across the community.",
-    tags: ["KUCH BHI", "Wildcard", "All-Rounder"],
+    bio: "General Secretary of BUILDCULT. Driving community administration, internal operations, communication, and event execution.",
+    tags: ["GenSec", "Operations", "Administration"],
     tone: 4,
     links: [
       { label: "saiansh@buildcult.dev", href: "mailto:saiansh@buildcult.dev" },
