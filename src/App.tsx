@@ -120,26 +120,6 @@ export default function App() {
     setCurrentPage("join");
   };
 
-  const navigateToAbout = () => {
-    window.location.hash = "#about";
-    setCurrentPage("about");
-  };
-
-  const navigateToFaq = () => {
-    window.location.hash = "#faq";
-    setCurrentPage("faq");
-  };
-
-  const navigateToContact = () => {
-    window.location.hash = "#contact";
-    setCurrentPage("contact");
-  };
-
-  const navigateToPrivacy = () => {
-    window.location.hash = "#privacy";
-    setCurrentPage("privacy");
-  };
-
   return (
     <div className="relative min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* 3D Perspective Tunnel Hero Entrance (No GradientOrb in scroll animation) */}
@@ -224,14 +204,6 @@ export default function App() {
                 isActive: true,
               },
               {
-                title: "About",
-                href: "#about",
-                onClick: (e) => {
-                  e.preventDefault();
-                  navigateToAbout();
-                },
-              },
-              {
                 title: "Core",
                 href: "#core",
                 onClick: (e) => {
@@ -260,27 +232,12 @@ export default function App() {
                 },
               },
               {
-                title: "FAQ",
-                href: "#faq",
+                title: "Info & FAQ",
+                href: "#info",
                 onClick: (e) => {
                   e.preventDefault();
-                  navigateToFaq();
-                },
-              },
-              {
-                title: "Contact",
-                href: "#contact",
-                onClick: (e) => {
-                  e.preventDefault();
-                  navigateToContact();
-                },
-              },
-              {
-                title: "Privacy",
-                href: "#privacy",
-                onClick: (e) => {
-                  e.preventDefault();
-                  navigateToPrivacy();
+                  const el = document.getElementById("info");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
                 },
               },
               {

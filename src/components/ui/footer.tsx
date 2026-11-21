@@ -107,11 +107,6 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#about" className="hover:text-white transition">
-                  About
-                </a>
-              </li>
-              <li>
                 <a href="#core" className="hover:text-white transition">
                   Core Crew
                 </a>
@@ -132,13 +127,8 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#faq" className="hover:text-white transition">
-                  FAQ
-                </a>
-              </li>
-              <li>
-                <a href="#contact" className="hover:text-white transition">
-                  Contact
+                <a href="#info" className="hover:text-white transition">
+                  FAQ & Info Hub
                 </a>
               </li>
               <li>
@@ -192,17 +182,11 @@ export function Footer() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 text-xs glass-subtext">
           <p>&copy; {new Date().getFullYear()} BUILDCULT. All rights reserved.</p>
           <div className="flex gap-6">
-            <a href="#about" className="hover:text-white transition">
-              About
+            <a href="#info" className="hover:text-white transition">
+              FAQ & Privacy
             </a>
-            <a href="#faq" className="hover:text-white transition">
-              FAQ
-            </a>
-            <a href="#contact" className="hover:text-white transition">
-              Contact
-            </a>
-            <a href="#privacy" className="hover:text-white transition">
-              Privacy Policy
+            <a href="#info" className="hover:text-white transition">
+              Contact Us
             </a>
           </div>
         </div>

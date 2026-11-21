@@ -6,9 +6,9 @@ import BrandSlider, {
   BrandList,
 } from "@/components/ui/hero-01-utils/brand-slider";
 import type { AvatarList } from "@/components/ui/hero-01-utils/hero";
-import CoreSection from "./core-section";
 import PastEventsSection from "./past-events-section";
 import ServicesSection from "./services-section";
+import InfoHubSection from "./info-hub-section";
 import Footer from "./footer";
 
 export interface AgencyHeroSectionProps {
@@ -125,6 +125,7 @@ export default function AgencyHeroSection({
         </div>
         <PastEventsSection id="past-events" />
         <ServicesSection id="services" />
+        <InfoHubSection id="info" />
       </main>
       <Footer />
     </div>
