@@ -101,7 +101,7 @@ export const CORE_MEMBERS: LanyardMember[] = [
     team: "BUILDCULT · Media & Growth",
     image: "/angel-portrait.jpg",
     bio: "Head of Social Media & Storytelling. Leading brand presence, community drops, viral campaigns, and digital engagement.",
-    tags: ["Social Media Head", "Community Drops", "Media & Growth"],
+    tags: ["Community Drops", "Media & Growth"],
     tone: 5,
     links: [
       { label: "angel@buildcult.dev", href: "mailto:angel@buildcult.dev" },

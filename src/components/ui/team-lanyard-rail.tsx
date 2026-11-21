@@ -368,18 +368,18 @@ const BadgeFaces = React.memo(function BadgeFaces({ item, tone }: { item: Lanyar
         )}
 
         {/* Bottom footer: Links on Left, QR Code on Right without overlap */}
-        <div className="relative z-10 mt-auto flex items-end justify-between border-t border-border/40 pt-[0.4em]">
+        <div className="relative z-10 mt-auto flex items-end justify-between gap-1 border-t border-border/40 pt-[0.35em]">
           {links.length > 0 ? (
-            <div className="flex max-w-[55%] flex-col items-start gap-[0.18em] overflow-hidden transition-opacity duration-150 motion-reduce:transition-none" style={{ opacity: "var(--drawn, 1)" }}>
+            <div className="flex flex-1 min-w-0 flex-col items-start gap-[0.16em] overflow-hidden transition-opacity duration-150 motion-reduce:transition-none" style={{ opacity: "var(--drawn, 1)" }}>
               {links.map((link) => (
-                <span key={link.label} className={`${LINK_ROW} max-w-full text-[0.54em]`}>
+                <span key={link.label} className={`${LINK_ROW} max-w-full text-[0.52em]`}>
                   <LinkIcon label={link.label} />
                   <span className="truncate">{link.label}</span>
                 </span>
               ))}
             </div>
           ) : <div />}
-          <svg aria-hidden="true" viewBox="-1 -1 23 23" className="size-[2.8em] shrink-0 text-foreground">
+          <svg aria-hidden="true" viewBox="-1 -1 23 23" className="size-[2.5em] shrink-0 text-foreground">
             <path d={qr} fill="currentColor" />
           </svg>
         </div>
@@ -1102,9 +1102,9 @@ export function TeamLanyardRail({
                   </span>
                   {isFlipped && links.length > 0 && (
                     <div ref={(node) => { linkLayers.current[i] = node; }} data-links className="pointer-events-none absolute left-0 transition-opacity duration-150 motion-reduce:transition-none" style={{ top: cardOffset, width: W, height: g.H, fontSize: base, opacity: 0, visibility: "hidden" }}>
-                      <div className="absolute bottom-[0.75em] left-[0.75em] flex max-w-[55%] flex-col items-start gap-[0.18em] overflow-hidden">
+                      <div className="absolute bottom-[0.75em] left-[0.75em] right-[3.2em] flex flex-col items-start gap-[0.16em] overflow-hidden">
                         {links.map((link) => (
-                          <a key={link.label} href={link.href} onPointerDown={(event) => { event.stopPropagation(); stop(); }} onFocus={stop} className={`${LINK_ROW} pointer-events-auto max-w-full text-[0.54em] text-card-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring`}>
+                          <a key={link.label} href={link.href} onPointerDown={(event) => { event.stopPropagation(); stop(); }} onFocus={stop} className={`${LINK_ROW} pointer-events-auto max-w-full text-[0.52em] text-card-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring`}>
                             <LinkIcon label={link.label} />
                             <span className="truncate">{link.label}</span>
                           </a>

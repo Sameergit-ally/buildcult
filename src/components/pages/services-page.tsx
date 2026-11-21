@@ -97,6 +97,14 @@ export function ServicesPage({ onBackToHome, onJoinClick }: ServicesPageProps) {
       isActive: true,
     },
     {
+      title: "Future Events",
+      href: "#future-events",
+      onClick: (e) => {
+        e.preventDefault();
+        window.location.hash = "#future-events";
+      },
+    },
+    {
       title: "Join Us",
       href: "#join-us",
       onClick: (e) => {

@@ -66,7 +66,7 @@ export function CollaborateModal({ open, onOpenChange }: CollaborateModalProps) 
                 Transmission Received!
               </h3>
               <p className="text-sm text-muted-foreground max-w-xs">
-                Thanks for reaching out! Aman and Preet will review your project details and get back to you shortly.
+                Thanks for reaching out! The BUILDCULT core team will review your project details and get back to you shortly.
               </p>
               <Button
                 onClick={handleReset}

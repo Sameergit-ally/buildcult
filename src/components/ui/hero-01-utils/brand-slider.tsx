@@ -30,21 +30,21 @@ export function BrandSlider({ brandList }: { brandList: BrandList[] }) {
             </div>
             {brandList && brandList.length > 0 && (
               <div className="py-4">
-                <Marquee pauseOnHover className="[--duration:25s] p-0">
+                <Marquee pauseOnHover className="[--duration:28s] p-0">
                   {brandList.map((brand, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-center grayscale opacity-75 hover:grayscale-0 hover:opacity-100 transition-all duration-300 px-4"
+                      className="flex items-center justify-center shrink-0 px-6 sm:px-8 transition-all duration-300 hover:scale-105"
                     >
                       <img
                         src={brand.image}
                         alt={brand.name}
-                        className="h-8 max-w-[140px] object-contain dark:hidden"
+                        className="h-8 sm:h-9 md:h-10 w-auto max-w-[140px] object-contain dark:hidden"
                       />
                       <img
                         src={brand.lightimg || brand.image}
                         alt={brand.name}
-                        className="hidden dark:block h-8 max-w-[140px] object-contain"
+                        className="hidden dark:block h-8 sm:h-9 md:h-10 w-auto max-w-[140px] object-contain"
                       />
                     </div>
                   ))}

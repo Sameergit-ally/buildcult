@@ -39,6 +39,14 @@ export function CorePage({ onBackToHome }: CorePageProps) {
       },
     },
     {
+      title: "Future Events",
+      href: "#future-events",
+      onClick: (e) => {
+        e.preventDefault();
+        window.location.hash = "#future-events";
+      },
+    },
+    {
       title: "Services",
       href: "#services",
       onClick: (e) => {

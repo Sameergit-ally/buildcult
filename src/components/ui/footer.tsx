@@ -117,13 +117,13 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#services" className="hover:text-white transition">
-                  Services & What We Are
+                <a href="#future-events" className="hover:text-white transition">
+                  Future Events
                 </a>
               </li>
               <li>
-                <a href="#core" className="hover:text-white transition">
-                  Core Crew (Full Page)
+                <a href="#services" className="hover:text-white transition">
+                  Services & What We Are
                 </a>
               </li>
               <li>

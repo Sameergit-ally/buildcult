@@ -4,13 +4,14 @@ import AgencyHeroSection from "@/components/ui/hero-01";
 import CorePage from "@/components/pages/core-page";
 import JoinUsPage from "@/components/pages/join-us-page";
 import ServicesPage from "@/components/pages/services-page";
+import FutureEventsPage from "@/components/pages/future-events-page";
 import PerspectiveTunnelHero from "@/components/ui/perspective-tunnel-hero";
 import GradientOrb from "@/components/ui/gradient-orb";
 import { Sparkles } from "lucide-react";
 import { PittiPitti } from "@/components/PittiPitti/PittiPitti";
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<"home" | "core" | "services" | "join">("home");
+  const [currentPage, setCurrentPage] = useState<"home" | "core" | "services" | "join" | "future-events">("home");
   const [showTunnel, setShowTunnel] = useState<boolean>(() => {
     if (typeof window !== "undefined") {
       // Direct deep link to standalone pages skips intro tunnel
@@ -19,6 +20,8 @@ export default function App() {
         window.location.hash === "#core" ||
         window.location.hash === "#services-page" ||
         window.location.hash === "#services" ||
+        window.location.hash === "#future-events" ||
+        window.location.hash === "#events" ||
         window.location.hash === "#join-us" ||
         window.location.hash === "#join"
       ) return false;
@@ -41,6 +44,9 @@ export default function App() {
         setShowTunnel(false);
       } else if (window.location.hash === "#services-page" || window.location.hash === "#services") {
         setCurrentPage("services");
+        setShowTunnel(false);
+      } else if (window.location.hash === "#future-events" || window.location.hash === "#events") {
+        setCurrentPage("future-events");
         setShowTunnel(false);
       } else if (window.location.hash === "#join-us" || window.location.hash === "#join") {
         setCurrentPage("join");
@@ -65,6 +71,11 @@ export default function App() {
   const navigateToServices = () => {
     window.location.hash = "#services";
     setCurrentPage("services");
+  };
+
+  const navigateToFutureEvents = () => {
+    window.location.hash = "#future-events";
+    setCurrentPage("future-events");
   };
 
   const navigateToHome = () => {
@@ -102,8 +113,8 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* GradientOrb stays off the services page, which has its own dotted trail. */}
-      {!showTunnel && currentPage !== "services" && (
+      {/* GradientOrb stays off services & future events, which have their own shader/canvas effects. */}
+      {!showTunnel && currentPage !== "services" && currentPage !== "future-events" && (
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-60 dark:opacity-85 transition-opacity duration-1000">
           <GradientOrb
             config={{
@@ -116,12 +127,14 @@ export default function App() {
         </div>
       )}
 
-      {/* Active Page View (Landing Page, Core Page, Services Webpage, or Join Us Portal) */}
+      {/* Active Page View (Landing Page, Core Page, Services Webpage, Future Events, or Join Us Portal) */}
       <div className="relative z-10">
         {currentPage === "core" ? (
           <CorePage onBackToHome={navigateToHome} />
         ) : currentPage === "services" ? (
           <ServicesPage onBackToHome={navigateToHome} onJoinClick={navigateToJoin} />
+        ) : currentPage === "future-events" ? (
+          <FutureEventsPage onBackToHome={navigateToHome} onJoinClick={navigateToJoin} />
         ) : currentPage === "join" ? (
           <JoinUsPage onBackToHome={navigateToHome} />
         ) : (
@@ -155,6 +168,14 @@ export default function App() {
                 href: "#past-events",
               },
               {
+                title: "Future Events",
+                href: "#future-events",
+                onClick: (e) => {
+                  e.preventDefault();
+                  navigateToFutureEvents();
+                },
+              },
+              {
                 title: "Services",
                 href: "#services",
                 onClick: (e) => {
@@ -175,7 +196,7 @@ export default function App() {
         )}
       </div>
 
-      {/* Floating Replay 3D Tunnel Pill */}
+      {/* Floating Replay 3D Tunnel Pill (positioned on bottom-left to prevent overlap with mascot) */}
       {!showTunnel && (
         <button
           onClick={() => {
@@ -183,7 +204,7 @@ export default function App() {
             setShowTunnel(true);
           }}
           aria-label="Replay 3D Warp Intro"
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full glass-badge px-4 py-2 text-xs font-semibold shadow-2xl hover:border-white/50 transition-all cursor-pointer group"
+          className="fixed bottom-6 left-6 z-40 flex items-center gap-2 rounded-full glass-badge px-4 py-2 text-xs font-semibold shadow-2xl hover:border-white/50 transition-all cursor-pointer group"
         >
           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-primary group-hover:scale-110 transition-transform">
             <Sparkles className="h-3 w-3" />
