@@ -52,17 +52,15 @@ export function PittiPitti() {
 
   const [hidden, setHidden] = useState(() => readLS(C.storage.hidden) === '1');
   const [storedName, setStoredName] = useState(() => readLS(C.storage.name));
-  
-  // Pitti Pitti won't activate interactions unless a name has been entered
-  const isUnlocked = Boolean(storedName && storedName.trim().length > 0);
-  const displayName = storedName?.trim() || '';
+  // Always ask on start if name is not set in localStorage
+  const hasName = Boolean(storedName && storedName.trim().length > 0);
+  const displayName = storedName?.trim() || C.defaultName;
 
   const brain = usePittiBrain({
     rootRef, flipRef, pupilsRef,
     displayName,
-    askNameOnStart: !isUnlocked,
+    askNameOnStart: !hasName,
     enabled: !hidden,
-    isUnlocked,
   });
   const { bubble, mood, clearBubble, say } = brain;
 
@@ -79,15 +77,18 @@ export function PittiPitti() {
 
   const submitName = useCallback((raw: string) => {
     const n = raw.trim().slice(0, 24);
-    if (!n) return;
-    writeLS(C.storage.name, n);
-    writeLS(C.storage.asked, '1');
-    setStoredName(n);
-    // After unlocking, greet with flirty/roast line
-    setTimeout(() => {
+    if (n) {
+      writeLS(C.storage.name, n);
+      writeLS(C.storage.asked, '1');
+      setStoredName(n);
       say('greet', n);
-    }, 150);
+    }
   }, [say]);
+
+  const skipName = useCallback(() => {
+    // If user clicks skip or escape without typing name, keep re-asking
+    brain.askName();
+  }, [brain]);
 
   const style = themeStyle(theme);
 
@@ -100,25 +101,16 @@ export function PittiPitti() {
     );
   }
 
-  // If not unlocked, keep the ask bubble open permanently until submitted!
-  const activeBubble = isUnlocked
-    ? bubble
-    : (bubble || { id: 1, kind: 'ask' as const, text: C.askText });
-
   return (
     <div ref={rootRef} className="pitti-root pitti-scope" data-mood={mood} style={style}>
-      {activeBubble && (
-        <SpeechBubble
-          key={activeBubble.id}
-          kind={activeBubble.kind}
-          text={activeBubble.text}
-          onSubmitName={submitName}
-        />
+      {bubble && (
+        <SpeechBubble key={bubble.id} kind={bubble.kind} text={bubble.text}
+          onSubmitName={submitName} onSkip={skipName} />
       )}
 
       <div ref={flipRef} className="pitti-flip">
         <button type="button" className="pitti-hit"
-          aria-label="Pitti Pitti, a small rabbit. Enter your name to interact!"
+          aria-label="Pitti Pitti, a small black rabbit. Press to make it dance, or drag to move."
           onPointerEnter={brain.onHover}
           onPointerLeave={brain.onLeave}
           onPointerDown={brain.onPointerDown}
@@ -132,14 +124,14 @@ export function PittiPitti() {
         </button>
       </div>
 
-      {isUnlocked && mood === 'dance' && (
+      {mood === 'dance' && (
         <>
           <span className="pitti-heart pitti-h1" aria-hidden="true">♥</span>
           <span className="pitti-heart pitti-h2" aria-hidden="true">✦</span>
           <span className="pitti-heart pitti-h3" aria-hidden="true">♥</span>
         </>
       )}
-      {isUnlocked && mood === 'sleep' && (
+      {mood === 'sleep' && (
         <span className="pitti-zzz" aria-hidden="true">
           <i>z</i><i>z</i><i>Z</i>
         </span>

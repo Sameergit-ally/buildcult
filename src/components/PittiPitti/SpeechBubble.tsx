@@ -6,7 +6,7 @@ interface Props {
   kind: 'say' | 'ask';
   text: string;
   onSubmitName: (name: string) => void;
-  onSkip?: () => void;
+  onSkip: () => void;
 }
 
 export function SpeechBubble({ kind, text, onSubmitName, onSkip }: Props) {
@@ -38,7 +38,7 @@ export function SpeechBubble({ kind, text, onSubmitName, onSkip }: Props) {
     onSubmitName(value);
   };
   const onKey = (e: KeyboardEvent) => {
-    if (e.key === 'Escape' && onSkip) onSkip();
+    if (e.key === 'Escape') onSkip();
   };
 
   const sayStyle =
@@ -67,17 +67,12 @@ export function SpeechBubble({ kind, text, onSubmitName, onSkip }: Props) {
                 className="pitti-input"
                 value={value}
                 maxLength={24}
-                placeholder="Enter your name..."
+                placeholder="Your name"
                 aria-label="Your name"
-                required
-                autoFocus
                 onChange={(e) => setValue(e.target.value)}
               />
-              <button className="pitti-btn" type="submit">Unlock 🐰</button>
+              <button className="pitti-btn" type="submit">Hi!</button>
             </div>
-            {onSkip && (
-              <button className="pitti-skip" type="button" onClick={onSkip}>Skip</button>
-            )}
           </form>
         )}
         <span className="pitti-bubble-tail" aria-hidden="true" />

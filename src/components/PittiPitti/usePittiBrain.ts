@@ -22,14 +22,13 @@ interface Options {
   displayName: string;
   askNameOnStart: boolean;
   enabled: boolean;
-  isUnlocked: boolean;
 }
 
 const rand = (min: number, max: number) => min + Math.random() * (max - min);
 const clamp = (v: number, min: number, max: number) => Math.min(Math.max(v, min), max);
 
 export function usePittiBrain({
-  rootRef, flipRef, pupilsRef, displayName, askNameOnStart, enabled, isUnlocked,
+  rootRef, flipRef, pupilsRef, displayName, askNameOnStart, enabled,
 }: Options) {
   const [mood, setMoodState] = useState<Mood>('idle');
   const [bubble, setBubble] = useState<BubbleState | null>(null);
@@ -115,6 +114,10 @@ export function usePittiBrain({
     showBubble('say', pickMessage(ctx, nameOverride ?? nameRef.current));
   }, [showBubble]);
 
+  const askName = useCallback(() => {
+    showBubble('ask', C.askText);
+  }, [showBubble]);
+
   const wake = useCallback(() => {
     if (moodRef.current !== 'sleep') return;
     setMood('wake', 1000);
@@ -128,7 +131,7 @@ export function usePittiBrain({
 
   // ---- UI handlers -------------------------------------------------------
   const onHover = useCallback((e: ReactPointerEvent<HTMLElement>) => {
-    if (!isUnlocked || e.pointerType === 'touch' || isDraggingRef.current) return;
+    if (e.pointerType === 'touch' || isDraggingRef.current) return;
     hoveredRef.current = true;
     const now = performance.now();
     lastActivityRef.current = now;
@@ -138,12 +141,12 @@ export function usePittiBrain({
     targetRef.current = null;
     if (!reducedRef.current) setMood('dance', 1600);
     say('hover');
-  }, [isUnlocked, say, setMood, wake]);
+  }, [say, setMood, wake]);
 
   const onLeave = useCallback(() => { hoveredRef.current = false; }, []);
 
   const onPointerDown = useCallback((e: ReactPointerEvent<HTMLElement>) => {
-    if (!isUnlocked || e.button !== 0) return; // left click only
+    if (e.button !== 0) return; // left click only
     const p = posRef.current;
     if (!p) return;
     isDraggingRef.current = true;
@@ -156,10 +159,10 @@ export function usePittiBrain({
     targetRef.current = null;
     lastActivityRef.current = performance.now();
     setMood('furious');
-  }, [isUnlocked, setMood]);
+  }, [setMood]);
 
   const onPointerUp = useCallback((e: ReactPointerEvent<HTMLElement>) => {
-    if (!isUnlocked || !isDraggingRef.current) return;
+    if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
     try {
       (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
@@ -183,7 +186,7 @@ export function usePittiBrain({
       }
       say('click');
     }
-  }, [isUnlocked, askOpenRef, reducedRef, say, setMood]);
+  }, [askOpenRef, reducedRef, say, setMood]);
 
   const onClick = useCallback((e: React.MouseEvent) => {
     if (hasDraggedRef.current) {
@@ -280,7 +283,7 @@ export function usePittiBrain({
           p.y += (dy / dist) * step;
           if (Math.abs(dx) > 3) facingRef.current = dx > 0 ? 1 : -1;
         }
-      } else if (isUnlocked && m === 'idle' && calm && !reducedRef.current && now >= pauseUntilRef.current) {
+      } else if (m === 'idle' && calm && !reducedRef.current && now >= pauseUntilRef.current) {
         let t: Vec | null = null;
         if (cur.active && !cur.hopped && now - cur.lastMove > C.cursorIdleMs) {
           cur.hopped = true;
@@ -405,7 +408,7 @@ export function usePittiBrain({
 
   // ---- Auto-talk every 2-3 minutes ---------------------------------------
   useEffect(() => {
-    if (!enabled || !isUnlocked) return;
+    if (!enabled) return;
     let id = 0;
     const schedule = () => {
       id = window.setTimeout(() => {
@@ -418,22 +421,19 @@ export function usePittiBrain({
     };
     schedule();
     return () => window.clearTimeout(id);
-  }, [enabled, isUnlocked, say, setMood]);
+  }, [enabled, say, setMood]);
 
   // ---- First hello (once) -------------------------------------------------
   useEffect(() => {
     if (!enabled || introDoneRef.current) return;
     const id = window.setTimeout(() => {
       introDoneRef.current = true;
-      if (!isUnlocked) {
-        showBubble('ask', C.askText);
-      } else {
-        if (!reducedRef.current) setMood('jump', 650);
-        say('greet');
-      }
+      if (!reducedRef.current) setMood('jump', 650);
+      if (startAskRef.current) showBubble('ask', C.askText);
+      else say('greet');
     }, 900);
     return () => window.clearTimeout(id);
-  }, [enabled, isUnlocked, say, setMood, showBubble]);
+  }, [enabled, say, setMood, showBubble]);
 
-  return { mood, bubble, say, clearBubble, onHover, onLeave, onClick, onPointerDown, onPointerUp };
+  return { mood, bubble, say, askName, clearBubble, onHover, onLeave, onClick, onPointerDown, onPointerUp };
 }
