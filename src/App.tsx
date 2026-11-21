@@ -120,6 +120,20 @@ export default function App() {
     setCurrentPage("join");
   };
 
+  const navigateToContact = () => {
+    const el = document.getElementById("info");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    } else {
+      window.location.hash = "";
+      setCurrentPage("home");
+      setTimeout(() => {
+        const infoEl = document.getElementById("info");
+        if (infoEl) infoEl.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
+  };
+
   return (
     <div className="relative min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* 3D Perspective Tunnel Hero Entrance (No GradientOrb in scroll animation) */}
