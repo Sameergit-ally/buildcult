@@ -107,6 +107,11 @@ export function Footer() {
                 </a>
               </li>
               <li>
+                <a href="#about" className="hover:text-white transition">
+                  About
+                </a>
+              </li>
+              <li>
                 <a href="#core" className="hover:text-white transition">
                   Core Crew
                 </a>
@@ -123,7 +128,17 @@ export function Footer() {
               </li>
               <li>
                 <a href="#services" className="hover:text-white transition">
-                  Services & What We Are
+                  Services
+                </a>
+              </li>
+              <li>
+                <a href="#faq" className="hover:text-white transition">
+                  FAQ
+                </a>
+              </li>
+              <li>
+                <a href="#contact" className="hover:text-white transition">
+                  Contact
                 </a>
               </li>
               <li>
@@ -177,14 +192,17 @@ export function Footer() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 text-xs glass-subtext">
           <p>&copy; {new Date().getFullYear()} BUILDCULT. All rights reserved.</p>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-white transition">
+            <a href="#about" className="hover:text-white transition">
+              About
+            </a>
+            <a href="#faq" className="hover:text-white transition">
+              FAQ
+            </a>
+            <a href="#contact" className="hover:text-white transition">
+              Contact
+            </a>
+            <a href="#privacy" className="hover:text-white transition">
               Privacy Policy
-            </a>
-            <a href="#" className="hover:text-white transition">
-              Terms of Service
-            </a>
-            <a href="#" className="hover:text-white transition">
-              Security
             </a>
           </div>
         </div>

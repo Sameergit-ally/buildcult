@@ -5,13 +5,28 @@ import CorePage from "@/components/pages/core-page";
 import JoinUsPage from "@/components/pages/join-us-page";
 import ServicesPage from "@/components/pages/services-page";
 import FutureEventsPage from "@/components/pages/future-events-page";
+import AboutPage from "@/components/pages/about-page";
+import FaqPage from "@/components/pages/faq-page";
+import ContactPage from "@/components/pages/contact-page";
+import PrivacyPage from "@/components/pages/privacy-page";
 import PerspectiveTunnelHero from "@/components/ui/perspective-tunnel-hero";
 import GradientOrb from "@/components/ui/gradient-orb";
 import { Sparkles } from "lucide-react";
 import { PittiPitti } from "@/components/PittiPitti/PittiPitti";
 
+export type PageRoute =
+  | "home"
+  | "core"
+  | "services"
+  | "join"
+  | "future-events"
+  | "about"
+  | "faq"
+  | "contact"
+  | "privacy";
+
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<"home" | "core" | "services" | "join" | "future-events">("home");
+  const [currentPage, setCurrentPage] = useState<PageRoute>("home");
   const [showTunnel, setShowTunnel] = useState<boolean>(() => {
     if (typeof window !== "undefined") {
       // Direct deep link to standalone pages skips intro tunnel
@@ -23,7 +38,11 @@ export default function App() {
         window.location.hash === "#future-events" ||
         window.location.hash === "#events" ||
         window.location.hash === "#join-us" ||
-        window.location.hash === "#join"
+        window.location.hash === "#join" ||
+        window.location.hash === "#about" ||
+        window.location.hash === "#faq" ||
+        window.location.hash === "#contact" ||
+        window.location.hash === "#privacy"
       ) return false;
       if (
         window.location.hash &&
@@ -39,19 +58,32 @@ export default function App() {
 
   useEffect(() => {
     const handleHashChange = () => {
-      if (window.location.hash === "#core-page" || window.location.hash === "#core") {
+      const hash = window.location.hash;
+      if (hash === "#core-page" || hash === "#core") {
         setCurrentPage("core");
         setShowTunnel(false);
-      } else if (window.location.hash === "#services-page" || window.location.hash === "#services") {
+      } else if (hash === "#services-page" || hash === "#services") {
         setCurrentPage("services");
         setShowTunnel(false);
-      } else if (window.location.hash === "#future-events" || window.location.hash === "#events") {
+      } else if (hash === "#future-events" || hash === "#events") {
         setCurrentPage("future-events");
         setShowTunnel(false);
-      } else if (window.location.hash === "#join-us" || window.location.hash === "#join") {
+      } else if (hash === "#join-us" || hash === "#join") {
         setCurrentPage("join");
         setShowTunnel(false);
-      } else if (window.location.hash === "#intro") {
+      } else if (hash === "#about") {
+        setCurrentPage("about");
+        setShowTunnel(false);
+      } else if (hash === "#faq") {
+        setCurrentPage("faq");
+        setShowTunnel(false);
+      } else if (hash === "#contact") {
+        setCurrentPage("contact");
+        setShowTunnel(false);
+      } else if (hash === "#privacy") {
+        setCurrentPage("privacy");
+        setShowTunnel(false);
+      } else if (hash === "#intro") {
         setShowTunnel(true);
       } else {
         setCurrentPage("home");
@@ -86,6 +118,26 @@ export default function App() {
   const navigateToJoin = () => {
     window.location.hash = "#join-us";
     setCurrentPage("join");
+  };
+
+  const navigateToAbout = () => {
+    window.location.hash = "#about";
+    setCurrentPage("about");
+  };
+
+  const navigateToFaq = () => {
+    window.location.hash = "#faq";
+    setCurrentPage("faq");
+  };
+
+  const navigateToContact = () => {
+    window.location.hash = "#contact";
+    setCurrentPage("contact");
+  };
+
+  const navigateToPrivacy = () => {
+    window.location.hash = "#privacy";
+    setCurrentPage("privacy");
   };
 
   return (
@@ -127,7 +179,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Active Page View (Landing Page, Core Page, Services Webpage, Future Events, or Join Us Portal) */}
+      {/* Active Page View */}
       <div className="relative z-10">
         {currentPage === "core" ? (
           <CorePage onBackToHome={navigateToHome} />
@@ -137,10 +189,26 @@ export default function App() {
           <FutureEventsPage onBackToHome={navigateToHome} onJoinClick={navigateToJoin} />
         ) : currentPage === "join" ? (
           <JoinUsPage onBackToHome={navigateToHome} />
+        ) : currentPage === "about" ? (
+          <AboutPage
+            onBackToHome={navigateToHome}
+            onJoinClick={navigateToJoin}
+            onContactClick={navigateToContact}
+          />
+        ) : currentPage === "faq" ? (
+          <FaqPage
+            onBackToHome={navigateToHome}
+            onJoinClick={navigateToJoin}
+            onContactClick={navigateToContact}
+          />
+        ) : currentPage === "contact" ? (
+          <ContactPage onBackToHome={navigateToHome} onJoinClick={navigateToJoin} />
+        ) : currentPage === "privacy" ? (
+          <PrivacyPage onBackToHome={navigateToHome} />
         ) : (
           <AgencyHeroSection
             onJoinClick={navigateToJoin}
-            onCollaborateClick={navigateToJoin}
+            onCollaborateClick={navigateToContact}
             navigationData={[
               {
                 title: "3D Intro",
@@ -154,6 +222,14 @@ export default function App() {
                 title: "Home",
                 href: "#home",
                 isActive: true,
+              },
+              {
+                title: "About",
+                href: "#about",
+                onClick: (e) => {
+                  e.preventDefault();
+                  navigateToAbout();
+                },
               },
               {
                 title: "Core",
@@ -184,6 +260,30 @@ export default function App() {
                 },
               },
               {
+                title: "FAQ",
+                href: "#faq",
+                onClick: (e) => {
+                  e.preventDefault();
+                  navigateToFaq();
+                },
+              },
+              {
+                title: "Contact",
+                href: "#contact",
+                onClick: (e) => {
+                  e.preventDefault();
+                  navigateToContact();
+                },
+              },
+              {
+                title: "Privacy",
+                href: "#privacy",
+                onClick: (e) => {
+                  e.preventDefault();
+                  navigateToPrivacy();
+                },
+              },
+              {
                 title: "Join Us",
                 href: "#join-us",
                 onClick: (e) => {
@@ -196,7 +296,7 @@ export default function App() {
         )}
       </div>
 
-      {/* Floating Replay 3D Tunnel Pill (positioned on bottom-left to prevent overlap with mascot) */}
+      {/* Floating Replay 3D Tunnel Pill */}
       {!showTunnel && (
         <button
           onClick={() => {
