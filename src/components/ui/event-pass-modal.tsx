@@ -42,80 +42,80 @@ interface EventShaderTheme {
 }
 
 const EVENT_THEMES: Record<string, EventShaderTheme> = {
-  // 1. Hackathon -> Cyber Neon Emerald (matrix/code vibes)
+  // 1. Hackathon -> Mint / Sage Light Aesthetic
   hackathon: {
-    name: "Matrix Neon",
+    name: "Mint Sage",
     badge: "Flagship Hackathon Pass",
     texture: {
-      colorBack: "#03281c",
-      colorFront: "#38ef7d",
+      colorBack: "#dcfce7",
+      colorFront: "#86efac",
       shape: "dots",
       type: "4x4",
-      size: 1.2,
+      size: 0.9,
       scale: 1.1,
       rotation: 45,
-      speed: 0.6,
+      speed: 0.35,
     },
     layout: {
-      inkColor: "#053d28",
-      watermarkColor: "#5aff9d",
+      inkColor: "#064e3b", // Deep forest green ink (crystal clear on light mint)
+      watermarkColor: "#10b981",
     },
   },
-  // 2. Tech Event -> Electric Cyan / Blue (deep dive / tech workshop)
+  // 2. Tech Event -> Ice Blue / Sky Light Aesthetic
   "tech-event": {
-    name: "Cyber Cobalt",
+    name: "Sky Glacier",
     badge: "Workshop & Speaker Pass",
     texture: {
-      colorBack: "#081b3a",
-      colorFront: "#00d2ff",
+      colorBack: "#e0f2fe",
+      colorFront: "#7dd3fc",
       shape: "wave",
       type: "random",
-      size: 1.4,
+      size: 1.1,
       scale: 1.2,
       rotation: 15,
-      speed: 0.5,
+      speed: 0.3,
     },
     layout: {
-      inkColor: "#072048",
-      watermarkColor: "#70e2ff",
+      inkColor: "#0c4a6e", // Deep navy ink (crystal clear on light blue)
+      watermarkColor: "#0284c7",
     },
   },
-  // 3. Meet -> Solar Amber / Orange (warm IRL community gathering)
+  // 3. Meet -> Warm Sunset Peach / Cream Light Aesthetic (matches demo)
   meet: {
-    name: "Solar Ember",
+    name: "Peach Cream",
     badge: "Community IRL Pass",
     texture: {
-      colorBack: "#381404",
-      colorFront: "#ff9046",
+      colorBack: "#ffedd5",
+      colorFront: "#fed7aa",
       shape: "warp",
       type: "random",
-      size: 0.9,
-      scale: 1.2,
+      size: 0.7,
+      scale: 1.1,
       rotation: 0,
-      speed: 0.45,
+      speed: 0.3,
     },
     layout: {
-      inkColor: "#4a1900",
-      watermarkColor: "#ffd4ad",
+      inkColor: "#5a3520", // Warm roasted coffee ink (clean & sharp)
+      watermarkColor: "#ea580c",
     },
   },
-  // 4. Project Meet -> Royal Violet / Fuchsia (builder squad milestone sync)
+  // 4. Project Meet -> Lavender / Lilac Light Aesthetic
   "project-meet": {
-    name: "Synthwave Violet",
+    name: "Lavender Mist",
     badge: "Squad Review Pass",
     texture: {
-      colorBack: "#200634",
-      colorFront: "#d946ef",
+      colorBack: "#f3e8ff",
+      colorFront: "#d8b4fe",
       shape: "swirl",
       type: "8x8",
-      size: 1.3,
-      scale: 1.3,
+      size: 1.0,
+      scale: 1.2,
       rotation: 20,
-      speed: 0.55,
+      speed: 0.35,
     },
     layout: {
-      inkColor: "#32064d",
-      watermarkColor: "#f5a3ff",
+      inkColor: "#4a044e", // Deep plum/violet ink (high contrast on lavender)
+      watermarkColor: "#a855f7",
     },
   },
 };
@@ -412,8 +412,8 @@ export function EventPassModal({
             </div>
 
             {/* ADMIT ONE TICKET SHADER COMPONENT */}
-            <div className="py-2 flex justify-center overflow-hidden">
-              <div className="max-w-full overflow-x-auto p-1">
+            <div className="py-2 flex justify-center items-center w-full overflow-hidden">
+              <div className="w-full flex justify-center items-center">
                 <AdmitOneTicket
                   name={attendeeName}
                   presenter="BUILDCULT PRESENTS"
@@ -422,11 +422,11 @@ export function EventPassModal({
                   dates={event.date}
                   stubText="ADMIT ONE"
                   watermark="2026"
-                  width={620}
+                  width={Math.min(580, typeof window !== "undefined" ? window.innerWidth - 64 : 580)}
                   tilt={{
-                    maxTilt: 12,
-                    scale: 1.03,
-                    glare: 0.22,
+                    maxTilt: 10,
+                    scale: 1.02,
+                    glare: 0.15,
                   }}
                   texture={eventTheme.texture}
                   layout={{
@@ -445,9 +445,9 @@ export function EventPassModal({
                     footerTracking: 0.02,
                     stubSize: 62 / 741,
                     stubTracking: 0,
-                    stubOpacity: 0.88,
+                    stubOpacity: 0.9,
                     watermarkSize: 138 / 741,
-                    watermarkOpacity: 0.65,
+                    watermarkOpacity: 0.55,
                   }}
                 />
               </div>
