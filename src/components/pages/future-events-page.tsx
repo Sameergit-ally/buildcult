@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Header, { type NavigationSection } from "@/components/ui/hero-01-utils/header";
 import { ShaderMetal } from "@/components/ui/shader-metal";
 import EventCard, { type EventCardData } from "@/components/ui/course-design-cards";
+import { EventPassModal } from "@/components/ui/event-pass-modal";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft,
@@ -105,6 +106,7 @@ type CategoryFilter = "all" | "hackathon" | "tech-event" | "meet" | "project-mee
 export function FutureEventsPage({ onBackToHome, onJoinClick }: FutureEventsPageProps) {
   const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>("all");
   const [rsvpModalEvent, setRsvpModalEvent] = useState<EventCardData | null>(null);
+  const [passModalEvent, setPassModalEvent] = useState<EventCardData | null>(null);
 
   const navigationData: NavigationSection[] = [
     {
@@ -430,13 +432,13 @@ export function FutureEventsPage({ onBackToHome, onJoinClick }: FutureEventsPage
               <div className="flex gap-3 pt-2">
                 <Button
                   onClick={() => {
+                    const ev = rsvpModalEvent;
                     setRsvpModalEvent(null);
-                    if (onJoinClick) onJoinClick();
-                    else window.location.hash = "#join-us";
+                    setPassModalEvent(ev);
                   }}
                   className="flex-1 rounded-full h-11 text-xs font-semibold glass-badge hover:border-white/50 cursor-pointer"
                 >
-                  Confirm Registration
+                  Confirm & Get VIP Pass 🎟️
                 </Button>
                 <Button
                   variant="outline"
@@ -448,6 +450,14 @@ export function FutureEventsPage({ onBackToHome, onJoinClick }: FutureEventsPage
               </div>
             </div>
           </div>
+        )}
+
+        {/* Instant Shareable VIP Pass Modal */}
+        {passModalEvent && (
+          <EventPassModal
+            event={passModalEvent}
+            onClose={() => setPassModalEvent(null)}
+          />
         )}
 
         {/* Footer */}
