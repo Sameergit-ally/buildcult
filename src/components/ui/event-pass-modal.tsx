@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { type EventCardData } from "@/components/ui/course-design-cards";
 import { Button } from "@/components/ui/button";
 import { AdmitOneTicket } from "@/components/ui/admit-one-ticket";
@@ -6,13 +6,14 @@ import {
   Download,
   Share2,
   CheckCircle2,
-  Sparkles,
-  Ticket,
+  Lock,
   Calendar,
   MapPin,
   X,
-  Volume2,
-  VolumeX,
+  AlertCircle,
+  Users,
+  ShieldCheck,
+  FileText,
 } from "lucide-react";
 
 interface EventPassModalProps {
@@ -21,102 +22,24 @@ interface EventPassModalProps {
   defaultAttendeeName?: string;
 }
 
-// Event-specific theme palettes: different color + shader shape per event category
-interface EventShaderTheme {
-  name: string;
-  badge: string;
-  texture: {
-    colorBack: string;
-    colorFront: string;
-    shape: string;
-    type: string;
-    size: number;
-    scale: number;
-    rotation: number;
-    speed: number;
-  };
-  layout: {
-    inkColor: string;
-    watermarkColor: string;
-  };
-}
+// Secret admin passcode to gate access to the pass generator
+const ADMIN_PASSCODE = "BUILDCULT2026";
 
-const EVENT_THEMES: Record<string, EventShaderTheme> = {
-  // 1. Hackathon -> Mint / Sage Light Aesthetic
-  hackathon: {
-    name: "Mint Sage",
-    badge: "Flagship Hackathon Pass",
-    texture: {
-      colorBack: "#dcfce7",
-      colorFront: "#86efac",
-      shape: "dots",
-      type: "4x4",
-      size: 0.9,
-      scale: 1.1,
-      rotation: 45,
-      speed: 0.35,
-    },
-    layout: {
-      inkColor: "#064e3b", // Deep forest green ink (crystal clear on light mint)
-      watermarkColor: "#10b981",
-    },
+// Light aesthetic pastel palette (high-contrast deep ink)
+const TICKET_STYLE = {
+  texture: {
+    colorBack: "#ffedd5", // Soft warm cream
+    colorFront: "#fed7aa", // Light pastel peach
+    shape: "warp",
+    type: "random",
+    size: 0.75,
+    scale: 1.15,
+    rotation: 0,
+    speed: 0.35,
   },
-  // 2. Tech Event -> Ice Blue / Sky Light Aesthetic
-  "tech-event": {
-    name: "Sky Glacier",
-    badge: "Workshop & Speaker Pass",
-    texture: {
-      colorBack: "#e0f2fe",
-      colorFront: "#7dd3fc",
-      shape: "wave",
-      type: "random",
-      size: 1.1,
-      scale: 1.2,
-      rotation: 15,
-      speed: 0.3,
-    },
-    layout: {
-      inkColor: "#0c4a6e", // Deep navy ink (crystal clear on light blue)
-      watermarkColor: "#0284c7",
-    },
-  },
-  // 3. Meet -> Warm Sunset Peach / Cream Light Aesthetic (matches demo)
-  meet: {
-    name: "Peach Cream",
-    badge: "Community IRL Pass",
-    texture: {
-      colorBack: "#ffedd5",
-      colorFront: "#fed7aa",
-      shape: "warp",
-      type: "random",
-      size: 0.7,
-      scale: 1.1,
-      rotation: 0,
-      speed: 0.3,
-    },
-    layout: {
-      inkColor: "#5a3520", // Warm roasted coffee ink (clean & sharp)
-      watermarkColor: "#ea580c",
-    },
-  },
-  // 4. Project Meet -> Lavender / Lilac Light Aesthetic
-  "project-meet": {
-    name: "Lavender Mist",
-    badge: "Squad Review Pass",
-    texture: {
-      colorBack: "#f3e8ff",
-      colorFront: "#d8b4fe",
-      shape: "swirl",
-      type: "8x8",
-      size: 1.0,
-      scale: 1.2,
-      rotation: 20,
-      speed: 0.35,
-    },
-    layout: {
-      inkColor: "#4a044e", // Deep plum/violet ink (high contrast on lavender)
-      watermarkColor: "#a855f7",
-    },
+  layout: {
+    inkColor: "#5a3520", // Deep roasted espresso ink
+    watermarkColor: "#ea580c",
   },
 };
 
@@ -125,7 +48,22 @@ export function EventPassModal({
   onClose,
   defaultAttendeeName = "",
 }: EventPassModalProps) {
-  const [attendeeName, setAttendeeName] = useState(
+  // Admin Authorization State
+  const [passcode, setPasscode] = useState("");
+  const [isAdminAuthorized, setIsAdminAuthorized] = useState(() => {
+    try {
+      return localStorage.getItem("bc_admin_auth") === "true";
+    } catch {
+      return false;
+    }
+  });
+  const [authError, setAuthError] = useState("");
+
+  // Registration Form State
+  const [email, setEmail] = useState("");
+  const [teamName, setTeamName] = useState("");
+  const [leaderName, setLeaderName] = useState("");
+  const [holderName, setHolderName] = useState(
     defaultAttendeeName || (() => {
       try {
         return localStorage.getItem("pitti:name") || "";
@@ -134,64 +72,76 @@ export function EventPassModal({
       }
     })
   );
-  const [role, setRole] = useState("Builder / Developer");
+
+  const [formError, setFormError] = useState("");
   const [generated, setGenerated] = useState(false);
-  const [ticketId] = useState(() => `BC-${Math.floor(100000 + Math.random() * 900000)}`);
+  const [ticketId, setTicketId] = useState("");
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
-  const [soundEnabled, setSoundEnabled] = useState(true);
 
   if (!event) return null;
 
-  // Selected event theme based on category
-  const eventTheme = EVENT_THEMES[event.category] || EVENT_THEMES["meet"];
-
-  const playChime = () => {
-    if (!soundEnabled) return;
-    try {
-      const audioCtx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
-      [440, 554.37, 659.25, 880].forEach((freq, idx) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0.15, audioCtx.currentTime + idx * 0.07);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.07 + 0.35);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(audioCtx.currentTime + idx * 0.07);
-        osc.stop(audioCtx.currentTime + idx * 0.07 + 0.36);
-      });
-    } catch {
-      // AudioContext fallback
+  // Admin access validation
+  const handleAdminVerify = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passcode.trim().toUpperCase() === ADMIN_PASSCODE) {
+      setIsAdminAuthorized(true);
+      try {
+        localStorage.setItem("bc_admin_auth", "true");
+      } catch {
+        /* storage disabled */
+      }
+      setAuthError("");
+    } else {
+      setAuthError("Invalid access key. Only designated administrators can issue passes.");
     }
   };
 
-  const handleGenerate = (e: React.FormEvent) => {
+  // Check email uniqueness and register
+  const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!attendeeName.trim()) return;
-    playChime();
+    setFormError("");
+
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes("@")) {
+      setFormError("Please provide a valid email address.");
+      return;
+    }
+    if (!teamName.trim() || !leaderName.trim() || !holderName.trim()) {
+      setFormError("All fields (Team Name, Leader Name, Holder Name) are required.");
+      return;
+    }
+
+    // Check localStorage for 1 ID per email enforcement
+    try {
+      const issuedKey = `bc_pass_${cleanEmail}`;
+      const existing = localStorage.getItem(issuedKey);
+      if (existing) {
+        setFormError("This email has already been registered for an ID card. Only 1 pass per email is permitted.");
+        return;
+      }
+
+      const newId = `BC-${Math.floor(100000 + Math.random() * 900000)}`;
+      setTicketId(newId);
+
+      const passData = {
+        id: newId,
+        email: cleanEmail,
+        teamName: teamName.trim(),
+        leaderName: leaderName.trim(),
+        holderName: holderName.trim(),
+        eventTitle: event.title,
+        issuedAt: new Date().toISOString(),
+      };
+      localStorage.setItem(issuedKey, JSON.stringify(passData));
+    } catch {
+      setTicketId(`BC-${Math.floor(100000 + Math.random() * 900000)}`);
+    }
+
     setGenerated(true);
   };
 
-  const handleShare = async () => {
-    const text = `🎟️ I just got my official Admit One VIP Pass for ${event.title} by @BUILDCULT!\nPass Holder: ${attendeeName}\nTicket ID: #${ticketId}\nSee you there! 🚀`;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `BUILDCULT Pass - ${event.title}`,
-          text,
-          url: window.location.href,
-        });
-      } catch {
-        // Cancelled
-      }
-    } else {
-      navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    }
-  };
-
+  // Google Drive format download (Organized folder naming + High-res pass data)
   const handleDownload = () => {
     setDownloading(true);
     try {
@@ -200,77 +150,102 @@ export function EventPassModal({
       if (!ctx) return;
 
       canvas.width = 1200;
-      canvas.height = 700; // Classic horizontal admit one aspect ratio
+      canvas.height = 700;
 
-      // Background
-      ctx.fillStyle = eventTheme.texture.colorBack;
+      // Clean Light background
+      ctx.fillStyle = TICKET_STYLE.texture.colorBack;
       ctx.fillRect(0, 0, 1200, 700);
 
-      // Glow accent
-      const radGrad = ctx.createRadialGradient(400, 350, 50, 400, 350, 600);
-      radGrad.addColorStop(0, eventTheme.texture.colorFront);
-      radGrad.addColorStop(1, eventTheme.texture.colorBack);
-      ctx.fillStyle = radGrad;
-      ctx.globalAlpha = 0.55;
+      // Radial peach gradient
+      const rad = ctx.createRadialGradient(400, 350, 50, 400, 350, 600);
+      rad.addColorStop(0, TICKET_STYLE.texture.colorFront);
+      rad.addColorStop(1, TICKET_STYLE.texture.colorBack);
+      ctx.fillStyle = rad;
+      ctx.globalAlpha = 0.6;
       ctx.fillRect(0, 0, 1200, 700);
       ctx.globalAlpha = 1.0;
 
-      // Ticket Border
-      ctx.strokeStyle = "rgba(255,255,255,0.4)";
+      // Border
+      ctx.strokeStyle = "rgba(90, 53, 32, 0.4)";
       ctx.lineWidth = 4;
       ctx.strokeRect(30, 30, 1140, 640);
 
       // Perforation line
       ctx.beginPath();
       ctx.setLineDash([12, 12]);
-      ctx.strokeStyle = "rgba(0,0,0,0.5)";
+      ctx.strokeStyle = "rgba(90, 53, 32, 0.5)";
       ctx.moveTo(900, 30);
       ctx.lineTo(900, 670);
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Ink Text
-      ctx.fillStyle = eventTheme.layout.inkColor;
+      // Ink typography (no emojis)
+      ctx.fillStyle = TICKET_STYLE.layout.inkColor;
 
-      // Header
+      ctx.font = "bold 24px monospace";
+      ctx.fillText("BUILDCULT PRESENTS", 70, 90);
+      ctx.fillText(event.title.toUpperCase(), 70, 130);
+
+      // Holder Name
+      ctx.font = "900 64px sans-serif";
+      ctx.fillText(holderName.toUpperCase(), 70, 240);
+
+      // Team & Leader info
       ctx.font = "bold 26px monospace";
-      ctx.fillText("BUILDCULT PRESENTS", 70, 95);
-      ctx.fillText(event.title.toUpperCase(), 70, 135);
+      ctx.fillText(`TEAM: ${teamName.toUpperCase()}  |  LEADER: ${leaderName.toUpperCase()}`, 70, 310);
 
-      // Attendee Name
-      ctx.font = "900 68px sans-serif";
-      ctx.fillText(attendeeName.toUpperCase(), 70, 260);
-
-      // Role & Badge
-      ctx.font = "bold 28px sans-serif";
-      ctx.fillText(`${role} · Verified Cultist`, 70, 320);
+      ctx.font = "20px monospace";
+      ctx.fillText(`EMAIL: ${email.toLowerCase()}`, 70, 360);
 
       // Meta: Venue & Date
-      ctx.font = "bold 24px monospace";
-      ctx.fillText(`📍 ${event.location || "Online Hub"}  ·  📅 ${event.date}`, 70, 560);
-      ctx.fillText(`TICKET ID #${ticketId} · ADMIT ONE · BUILDCULT.ORG`, 70, 610);
+      ctx.font = "bold 22px monospace";
+      ctx.fillText(`VENUE: ${event.location || "WORLDWIDE"}  ·  DATE: ${event.date.toUpperCase()}`, 70, 560);
+      ctx.fillText(`TICKET ID #${ticketId} · ADMIT ONE · BUILDCULT.ORG`, 70, 605);
 
       // Stub section (Right)
       ctx.save();
       ctx.translate(970, 580);
       ctx.rotate(-Math.PI / 2);
-      ctx.font = "bold 52px monospace";
+      ctx.font = "bold 48px monospace";
       ctx.fillText("ADMIT ONE", 0, 0);
       ctx.restore();
 
       // Watermark in stub
-      ctx.fillStyle = eventTheme.layout.watermarkColor;
+      ctx.fillStyle = TICKET_STYLE.layout.watermarkColor;
       ctx.font = "bold 130px sans-serif";
       ctx.fillText("2026", 930, 390);
 
+      // Download file in structured Drive-ready naming convention:
+      // BUILDCULT_DRIVE_PASS_[TEAM]_[HOLDER]_[ID].png
+      const safeTeam = teamName.replace(/[^a-zA-Z0-9]/g, "_");
+      const safeHolder = holderName.replace(/[^a-zA-Z0-9]/g, "_");
       const link = document.createElement("a");
-      link.download = `BUILDCULT-ADMIT-ONE-${attendeeName.replace(/\\s+/g, "_")}.png`;
+      link.download = `BUILDCULT_DRIVE_PASS_${safeTeam}_${safeHolder}_${ticketId}.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
     } catch {
       // Ignore
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const handleShare = async () => {
+    const text = `Official Admit One Pass for ${event.title} by BUILDCULT.\nPass Holder: ${holderName}\nTeam: ${teamName}\nLeader: ${leaderName}\nTicket ID: #${ticketId}\nVerified at buildcult.org`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `BUILDCULT Pass - ${event.title}`,
+          text,
+          url: window.location.href,
+        });
+      } catch {
+        /* canceled */
+      }
+    } else {
+      navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
     }
   };
 
@@ -283,88 +258,157 @@ export function EventPassModal({
         className="relative w-full max-w-2xl rounded-3xl p-5 sm:p-7 bg-card border border-border/80 shadow-2xl space-y-5 my-auto overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Top Controls: Category Badge, Audio Toggle & Close */}
+        {/* Top Header */}
         <div className="flex items-center justify-between pb-2 border-b border-border/30">
           <div className="flex items-center gap-2">
-            <span
-              className="flex h-2.5 w-2.5 rounded-full animate-pulse"
-              style={{ backgroundColor: eventTheme.texture.colorFront }}
-            />
+            <span className="flex h-2.5 w-2.5 rounded-full bg-orange-400" />
             <span className="font-mono text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              {eventTheme.badge} · {eventTheme.name}
+              Official Jan Hackathon ID Pass Portal
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setSoundEnabled((s) => !s)}
-              className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
-              title={soundEnabled ? "Mute SFX" : "Unmute SFX"}
-            >
-              {soundEnabled ? <Volume2 className="h-4 w-4 text-primary" /> : <VolumeX className="h-4 w-4" />}
-            </button>
-            <button
-              onClick={onClose}
-              className="h-8 w-8 rounded-full flex items-center justify-center bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
-              aria-label="Close modal"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
+          <button
+            onClick={onClose}
+            className="h-8 w-8 rounded-full flex items-center justify-center bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
+            aria-label="Close modal"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
 
-        {!generated ? (
-          /* STEP 1: Customizer Form */
-          <div className="space-y-4">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-mono font-medium">
-                <Ticket className="h-3.5 w-3.5" />
-                <span>Admit One Pass</span>
+        {/* SCREEN 1: ADMIN ACCESS PASSCODE GATE */}
+        {!isAdminAuthorized ? (
+          <div className="space-y-4 py-2">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 text-xs font-mono font-medium">
+                <Lock className="h-3.5 w-3.5" />
+                <span>Restricted Access Gate</span>
               </div>
-              <h2 className="text-2xl font-display font-bold text-foreground mt-1">
-                Generate Your Official Event Pass
+              <h2 className="text-xl sm:text-2xl font-display font-bold text-foreground">
+                Administrator Authentication Required
               </h2>
-              <p className="text-xs text-muted-foreground leading-relaxed mt-1">
-                Live interactive shader pass designed exclusively for{" "}
-                <span className="font-semibold text-foreground">{event.title}</span>.
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                ID pass registration and issuance is currently restricted to authorized administrators for Jan Hackathon. Please enter your access key to proceed.
               </p>
             </div>
 
-            <form onSubmit={handleGenerate} className="space-y-3.5">
+            <form onSubmit={handleAdminVerify} className="space-y-3.5 pt-2">
               <div className="space-y-1">
                 <label className="text-xs font-mono font-semibold text-foreground">
-                  Your Full Name / Builder Handle *
+                  Admin Passcode
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={passcode}
+                  onChange={(e) => setPasscode(e.target.value)}
+                  placeholder="Enter administrator passkey"
+                  className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border/80 focus:border-primary focus:outline-none text-sm text-foreground placeholder:text-muted-foreground font-mono"
+                />
+              </div>
+
+              {authError && (
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-destructive/10 text-destructive text-xs border border-destructive/20 font-mono">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>{authError}</span>
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                className="w-full h-11 rounded-xl text-xs font-semibold glass-badge hover:border-white/50 cursor-pointer shadow gap-2"
+              >
+                <ShieldCheck className="h-4 w-4" />
+                <span>Verify Access</span>
+              </Button>
+            </form>
+          </div>
+        ) : !generated ? (
+          /* SCREEN 2: REGISTRATION FORM (1 ID PER EMAIL, TEAM + LEADER + HOLDER) */
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-mono font-medium">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                <span>Admin Verified · Registration Open</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-display font-bold text-foreground">
+                Jan Hackathon Official ID Card
+              </h2>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Enforcing strictly one ID card per email address. Details will be formatted for Google Drive records.
+              </p>
+            </div>
+
+            <form onSubmit={handleRegister} className="space-y-3.5">
+              <div className="space-y-1">
+                <label className="text-xs font-mono font-semibold text-foreground">
+                  Email Address * (Strictly 1 Pass Per Email)
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="participant@example.com"
+                  className="w-full h-10 px-3.5 rounded-xl bg-muted/50 border border-border/80 focus:border-primary focus:outline-none text-xs text-foreground placeholder:text-muted-foreground font-mono"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-mono font-semibold text-foreground">
+                    Team Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={32}
+                    value={teamName}
+                    onChange={(e) => setTeamName(e.target.value)}
+                    placeholder="e.g. CultHackers"
+                    className="w-full h-10 px-3.5 rounded-xl bg-muted/50 border border-border/80 focus:border-primary focus:outline-none text-xs text-foreground placeholder:text-muted-foreground"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-mono font-semibold text-foreground">
+                    Team Leader Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={32}
+                    value={leaderName}
+                    onChange={(e) => setLeaderName(e.target.value)}
+                    placeholder="e.g. Alex Sharma"
+                    className="w-full h-10 px-3.5 rounded-xl bg-muted/50 border border-border/80 focus:border-primary focus:outline-none text-xs text-foreground placeholder:text-muted-foreground"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-mono font-semibold text-foreground">
+                  ID Card Holder Name *
                 </label>
                 <input
                   type="text"
                   required
-                  maxLength={30}
-                  value={attendeeName}
-                  onChange={(e) => setAttendeeName(e.target.value)}
-                  placeholder="e.g. Kaarunya Sharma"
-                  className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border/80 focus:border-primary focus:outline-none text-sm text-foreground placeholder:text-muted-foreground"
+                  maxLength={32}
+                  value={holderName}
+                  onChange={(e) => setHolderName(e.target.value)}
+                  placeholder="e.g. Kaarunya"
+                  className="w-full h-10 px-3.5 rounded-xl bg-muted/50 border border-border/80 focus:border-primary focus:outline-none text-xs text-foreground placeholder:text-muted-foreground"
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-mono font-semibold text-foreground">
-                  Specialization / Domain
-                </label>
-                <select
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border/80 focus:border-primary focus:outline-none text-xs text-foreground"
-                >
-                  <option value="Builder / Developer">Builder / Fullstack Dev</option>
-                  <option value="AI / ML Engineer">AI / ML Engineer</option>
-                  <option value="Product Designer">UI/UX & Product Designer</option>
-                  <option value="Web3 & Protocol Dev">Web3 & Protocol Dev</option>
-                  <option value="Indie Founder">Indie Hacker / Founder</option>
-                  <option value="Student Enthusiast">Student Enthusiast</option>
-                </select>
-              </div>
+              {formError && (
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-destructive/10 text-destructive text-xs border border-destructive/20 font-mono">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>{formError}</span>
+                </div>
+              )}
 
-              <div className="p-3.5 rounded-xl bg-muted/30 border border-border/40 text-xs font-mono text-muted-foreground space-y-1.5">
+              <div className="p-3 rounded-xl bg-muted/30 border border-border/40 text-xs font-mono text-muted-foreground space-y-1">
                 <div className="flex items-center gap-2 text-foreground font-semibold">
                   <Calendar className="h-3.5 w-3.5 text-primary" />
                   <span>{event.date}</span>
@@ -375,50 +419,43 @@ export function EventPassModal({
                     <span>{event.location}</span>
                   </div>
                 )}
-                <div className="flex items-center justify-between pt-1 border-t border-border/20 text-[11px]">
-                  <span>Assigned Theme:</span>
-                  <span
-                    className="font-bold uppercase tracking-wider"
-                    style={{ color: eventTheme.texture.colorFront }}
-                  >
-                    {eventTheme.name}
-                  </span>
-                </div>
               </div>
 
               <Button
                 type="submit"
-                className="w-full h-12 rounded-xl text-xs font-semibold glass-badge hover:border-white/50 cursor-pointer shadow-lg gap-2"
+                className="w-full h-11 rounded-xl text-xs font-semibold glass-badge hover:border-white/50 cursor-pointer shadow gap-2"
               >
-                <Sparkles className="h-4 w-4" />
-                <span>Mint Admit One Ticket</span>
+                <FileText className="h-4 w-4" />
+                <span>Issue Jan Hackathon ID Card</span>
               </Button>
             </form>
           </div>
         ) : (
-          /* STEP 2: Live WebGL Dithering AdmitOneTicket + Parallax Tilt + Export */
-          <div className="space-y-5">
+          /* SCREEN 3: ISSUED ADMIT ONE TICKET SHADER PASS */
+          <div className="space-y-4">
             <div className="text-center space-y-0.5">
               <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-mono font-medium">
                 <CheckCircle2 className="h-3.5 w-3.5" />
-                <span>VIP Ticket Minted</span>
+                <span>Official Pass Registered</span>
               </div>
               <h3 className="text-xl font-display font-bold text-foreground">
-                You're In, {attendeeName}!
+                {holderName} (Team {teamName})
               </h3>
               <p className="text-xs font-mono text-muted-foreground">
-                Move mouse over the ticket for interactive 3D physics tilt & glare.
+                Leader: {leaderName} · Registered to {email}
               </p>
             </div>
 
-            {/* ADMIT ONE TICKET SHADER COMPONENT */}
+            {/* LIVE SHADER TICKET */}
             <div className="py-2 flex justify-center items-center w-full overflow-hidden">
               <div className="w-full flex justify-center items-center">
                 <AdmitOneTicket
-                  name={attendeeName}
+                  name={holderName}
+                  teamName={teamName}
+                  leaderName={leaderName}
                   presenter="BUILDCULT PRESENTS"
-                  event={event.title}
-                  venue={event.location || "Worldwide"}
+                  event="JAN HACKATHON 2026"
+                  venue={event.location || "WORLDWIDE"}
                   dates={event.date}
                   stubText="ADMIT ONE"
                   watermark="2026"
@@ -428,9 +465,9 @@ export function EventPassModal({
                     scale: 1.02,
                     glare: 0.15,
                   }}
-                  texture={eventTheme.texture}
+                  texture={TICKET_STYLE.texture}
                   layout={{
-                    ...eventTheme.layout,
+                    ...TICKET_STYLE.layout,
                     padding: 57 / 741,
                     labelTop: 54 / 741,
                     labelSize: 18 / 741,
@@ -453,7 +490,7 @@ export function EventPassModal({
               </div>
             </div>
 
-            {/* Actions: Download HD & Share */}
+            {/* Actions: Download Drive Format & Share */}
             <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
               <Button
                 onClick={handleDownload}
@@ -461,7 +498,7 @@ export function EventPassModal({
                 className="flex-1 h-11 rounded-xl text-xs font-semibold glass-badge hover:border-white/50 cursor-pointer shadow gap-2"
               >
                 <Download className="h-4 w-4" />
-                <span>{downloading ? "Exporting High-Res..." : "Download Pass (HD)"}</span>
+                <span>{downloading ? "Preparing Drive Export..." : "Download Drive Format ID"}</span>
               </Button>
 
               <Button
@@ -472,12 +509,12 @@ export function EventPassModal({
                 {copied ? (
                   <>
                     <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                    <span>Copied Details!</span>
+                    <span>Copied Details</span>
                   </>
                 ) : (
                   <>
                     <Share2 className="h-4 w-4" />
-                    <span>Share on Socials</span>
+                    <span>Share Pass Info</span>
                   </>
                 )}
               </Button>

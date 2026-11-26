@@ -1125,6 +1125,8 @@ function fitScale(lines: string[], opts: any) {
 
 function TicketCard({
   name,
+  teamName,
+  leaderName,
   presenter,
   event,
   venue,
@@ -1142,7 +1144,7 @@ function TicketCard({
   const lines = splitName(name || "BUILDER");
   const scale = fitScale(lines, {
     availableWidth: perfX - layout.padding * width - 0.03 * width,
-    availableHeight: layout.footerTop * width - layout.nameTop * width - 0.02 * width,
+    availableHeight: layout.footerTop * width - layout.nameTop * width - 0.05 * width,
     fontSize: layout.nameSize * width,
     lineHeight: layout.nameLead * width,
     tracking: layout.nameTracking
@@ -1225,12 +1227,12 @@ function TicketCard({
           {event}
         </div>
 
-        {/* Large Name */}
+        {/* Large Name (Holder) */}
         <div
           className="absolute font-black tracking-tight"
           style={{
             left: layout.padding * width,
-            top: layout.nameTop * width,
+            top: layout.nameTop * width - 10,
             fontSize: layout.nameSize * width * scale,
             lineHeight: `${layout.nameLead * width * scale}px`,
             letterSpacing: `${layout.nameTracking}em`
@@ -1240,6 +1242,23 @@ function TicketCard({
             <div key={i}>{line}</div>
           ))}
         </div>
+
+        {/* Team & Leader Meta */}
+        {(teamName || leaderName) && (
+          <div
+            className="absolute font-mono font-semibold uppercase tracking-wider text-xs"
+            style={{
+              left: layout.padding * width,
+              top: (layout.nameTop + 0.13) * width,
+              fontSize: 0.022 * width,
+              opacity: 0.9,
+            }}
+          >
+            {teamName && <span>TEAM: {teamName}</span>}
+            {teamName && leaderName && <span>  |  </span>}
+            {leaderName && <span>LEAD: {leaderName}</span>}
+          </div>
+        )}
 
         {/* Footer: Venue & Dates */}
         <div

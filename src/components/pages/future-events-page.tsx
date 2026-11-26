@@ -22,82 +22,82 @@ export interface FutureEventsPageProps {
 
 // Exactly one real event per requested section
 const FUTURE_EVENTS: EventCardData[] = [
-  // 1. Upcoming Hackathons
+  // 1. Upcoming Hackathons -> Jan Hackathon (Only active event)
   {
     id: "hackathon-1",
     category: "hackathon",
     colorClass: "green",
-    date: "Upcoming · Season 2026/27",
-    title: "CodeYourCult II",
+    date: "January 2026",
+    title: "Jan Hackathon",
     location: "IRL & Worldwide Virtual",
     tag: "Flagship Hackathon",
     description:
-      "The flagship 48-hour builder hackathon by BUILDCULT. Bringing together top developers, designers, and creators to ship tangible projects with peer reviews and ecosystem grants.",
+      "The official flagship 48-hour builder hackathon by BUILDCULT. Bringing together top developers, designers, and creators to ship tangible projects with peer reviews and ecosystem grants.",
     progressLabel: "Registrations",
     progressPercent: "85%",
     progressValue: "85% Capacity",
     imgSrc1: "/aman.jpg",
     imgSrc2: "/armaan-portrait.jpg",
     imgSrc3: "/sameer-portrait.jpg",
-    countdownText: "Coming Soon",
+    countdownText: "Get ID Pass",
   },
 
-  // 2. Tech Events
+  // 2. Tech Events -> To Be Announced Soon
   {
     id: "tech-1",
     category: "tech-event",
     colorClass: "blue",
-    date: "Upcoming Workshop",
-    title: "BUILDCULT Tech Workshop & Speaker Session",
-    location: "Live Community Stage",
-    tag: "Tech Deep-Dive",
+    date: "To Be Announced Soon",
+    title: "Tech Workshop & Speaker Session",
+    location: "To Be Announced Soon",
+    tag: "Upcoming Event",
     description:
-      "Hands-on interactive technical session covering engineering pipelines, modern web architectures, WebGL shaders, and high-performance React led by the BUILDCULT tech leads.",
-    progressLabel: "RSVP Status",
-    progressPercent: "75%",
-    progressValue: "Open for RSVP",
+      "Hands-on interactive technical session covering engineering pipelines, modern web architectures, and high-performance React. Dates and speaker line-up will be announced soon.",
+    progressLabel: "Status",
+    progressPercent: "20%",
+    progressValue: "To Be Announced Soon",
     imgSrc1: "/sameer-portrait.jpg",
     imgSrc2: "/rishita-portrait.jpg",
-    countdownText: "RSVP Open",
+    countdownText: "To Be Announced Soon",
   },
 
-  // 3. Meets
+  // 3. Meets -> To Be Announced Soon
   {
     id: "meet-1",
     category: "meet",
     colorClass: "orange",
-    date: "Community Gathering",
+    date: "To Be Announced Soon",
     title: "BUILDCULT IRL Community Meet",
-    location: "Delhi Hub & Campus Chapters",
-    tag: "Offline Meetup",
+    location: "To Be Announced Soon",
+    tag: "Upcoming Meet",
     description:
-      "In-person meetup for builders, creators, and developers. Bring your laptops, share prototypes, exchange raw feedback, and hang out directly with the core team.",
-    progressLabel: "Attendees",
-    progressPercent: "90%",
-    progressValue: "Limited Seats",
+      "In-person meetup for builders, creators, and developers. Bring your laptops, share prototypes, and hang out directly with the core team. Venue and timing to be announced soon.",
+    progressLabel: "Status",
+    progressPercent: "15%",
+    progressValue: "To Be Announced Soon",
     imgSrc1: "/aman.jpg",
     imgSrc2: "/armaan-portrait.jpg",
     imgSrc3: "/pragya-portrait.jpg",
-    countdownText: "Save Date",
+    countdownText: "To Be Announced Soon",
   },
 
-  // 4. Project Meet
+  // 4. Project Meet -> To Be Announced Soon
   {
     id: "proj-1",
     category: "project-meet",
     colorClass: "purple",
-    date: "Sprint Sync",
+    date: "To Be Announced Soon",
     title: "Project Meet & Builder Squad Review",
-    location: "Discord Builder Voice",
-    tag: "Squad Sync",
+    location: "To Be Announced Soon",
+    tag: "Upcoming Sync",
     description:
-      "Collaborative sprint review and milestone sync for active builder squads, hackathon prototypes, and open-source initiatives shipping under the BUILDCULT flag.",
-    progressLabel: "Squad Slots",
-    progressPercent: "70%",
-    progressValue: "Review Slots Open",
+      "Collaborative sprint review and milestone sync for active builder squads and open-source initiatives. Schedule to be announced soon.",
+    progressLabel: "Status",
+    progressPercent: "10%",
+    progressValue: "To Be Announced Soon",
     imgSrc1: "/sameer-portrait.jpg",
     imgSrc2: "/saiansh-portrait.jpg",
-    countdownText: "Register Squad",
+    countdownText: "To Be Announced Soon",
   },
 ];
 
@@ -430,16 +430,25 @@ export function FutureEventsPage({ onBackToHome, onJoinClick }: FutureEventsPage
               </div>
 
               <div className="flex gap-3 pt-2">
-                <Button
-                  onClick={() => {
-                    const ev = rsvpModalEvent;
-                    setRsvpModalEvent(null);
-                    setPassModalEvent(ev);
-                  }}
-                  className="flex-1 rounded-full h-11 text-xs font-semibold glass-badge hover:border-white/50 cursor-pointer"
-                >
-                  Confirm & Get VIP Pass 🎟️
-                </Button>
+                {rsvpModalEvent.category === "hackathon" ? (
+                  <Button
+                    onClick={() => {
+                      const ev = rsvpModalEvent;
+                      setRsvpModalEvent(null);
+                      setPassModalEvent(ev);
+                    }}
+                    className="flex-1 rounded-full h-11 text-xs font-semibold glass-badge hover:border-white/50 cursor-pointer"
+                  >
+                    Jan Hackathon ID Portal
+                  </Button>
+                ) : (
+                  <Button
+                    disabled
+                    className="flex-1 rounded-full h-11 text-xs font-semibold opacity-60 cursor-not-allowed"
+                  >
+                    To Be Announced Soon
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   onClick={() => setRsvpModalEvent(null)}
